@@ -1,0 +1,17 @@
+# ASCEND_RT_VISIBLE_DEVICES=4,5,6,7 nohup python test.py --ptType Direct,COT --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test1.out &
+# ASCEND_RT_VISIBLE_DEVICES=0,1,2,3 nohup python test.py --ptType Naive --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test2.out &
+# ASCEND_RT_VISIBLE_DEVICES=4,5,6,7 nohup python test.py --ptType Direct --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test1.out &
+# ASCEND_RT_VISIBLE_DEVICES=0,1,2,3 nohup python test.py --tp 4 --ptType COT,Naive --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct  > test2.out &
+# NCCL_DEBUG=INFO NCCL_P2P_DISABLE=1 NCCL_IB_DISABLE=1 NCCL_SHM_DISABLE=1 nohup python test.py --tp 8 --ptType Direct --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_sft_qwen2.5vl-3b/checkpoint-1220  > test2.out &
+# nohup python test.py --tp 4 --ptType Naive --log_path ttt --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct --lora_path output_dapo_qwen2_5vl_7b/checkpoint-550  > ttt.out &
+# ASCEND_RT_VISIBLE_DEVICES=0 nohup python test.py --tp 1 --ptType Naive --log_path Qwen2.5-VL-3B-Instruct-grpoR16 --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_grpo_qwen2_5vl_3br16/checkpoint-300  > 3b-grpo-R16.out &
+# ASCEND_RT_VISIBLE_DEVICES=1 nohup python test.py --tp 1 --ptType Naive --log_path Qwen2.5-VL-3B-Instruct-drR16 --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_grpo_qwen2_5vl_3br16/checkpoint-500  > 3b-dr-R16.out &
+# ASCEND_RT_VISIBLE_DEVICES=2 nohup python test.py --tp 1 --ptType Naive --log_path Qwen2.5-VL-3B-Instruct-dapoR16 --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_grpo_qwen2_5vl_3br16/checkpoint-250  > 3b-dapo-R16.out &
+# ASCEND_RT_VISIBLE_DEVICES=0 nohup python test.py --tp 1 --ptType Naive --log_path Qwen2.5-VL-7B-Instruct-grpoR16 --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct --lora_path output_grpo_qwen2_5vl_7bR16/checkpoint-300  > 7b-grpo-R16.out &
+# ASCEND_RT_VISIBLE_DEVICES=1 nohup python test.py --tp 1 --ptType Naive --log_path Qwen2.5-VL-7B-Instruct-grpo --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct --lora_path output_grpo_qwen2_5vl_7b/checkpoint-250  > 7b-grpo.out &
+# ASCEND_RT_VISIBLE_DEVICES=2 nohup python test.py --tp 1 --ptType Naive --log_path Qwen2.5-VL-7B-Instruct-dr --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct --lora_path output_dr_qwen2_5vl_7b/checkpoint-650  > 7b-dr.out &
+# ASCEND_RT_VISIBLE_DEVICES=3 nohup python test.py --tp 1 --ptType Naive --log_path Qwen2.5-VL-7B-Instruct-datasynR16 --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct --lora_path output_syndata_qwen2_5vl_7bR16/checkpoint-310  > 7b-datasyn-R16.out &
+
+ASCEND_RT_VISIBLE_DEVICES=0 nohup python test.py --ptType Direct --log_path Qwen3-VL-4B-Instruct --model_path ../Downloads/Models/Qwen/Qwen3-VL-4B-Instruct > test1.out &
+ASCEND_RT_VISIBLE_DEVICES=1 nohup python test.py --ptType Naive --log_path Qwen3-VL-4B-Instruct --model_path ../Downloads/Models/Qwen/Qwen3-VL-4B-Instruct > test2.out &
+ASCEND_RT_VISIBLE_DEVICES=2 nohup python test.py --ptType COT --log_path Qwen3-VL-4B-Instruct --model_path ../Downloads/Models/Qwen/Qwen3-VL-4B-Instruct > test3.out &
