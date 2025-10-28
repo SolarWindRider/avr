@@ -17,7 +17,7 @@
 # nohup torchrun --nproc_per_node=8 train_papo.py --loss_type dapo --output_dir output_papod_qwen2_5vl_3b > qwen2.5vl3b-papod.out &
 # torchrun --nproc_per_node=8 train_papo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct --loss_type grpo --output_dir output_papog_qwen2_5vl_7b > qwen2.5vl7b-papog.out
 # nohup torchrun --nproc_per_node=8 train_papo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type dapo --output_dir output_papod_qwen2_5vl_3b > qwen2.5vl3b-papod.out &
-nohup torchrun --nproc_per_node=8 train_papo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type grpo --output_dir output_papog_qwen2_5vl_3b > qwen2.5vl3b-papog.out &
+nohup torchrun --nproc_per_node=8 train_papo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type dapo --output_dir output_papod_qwen2_5vl_3b > qwen2.5vl3b-papod.out &
 
 
 # nohup torchrun --nproc_per_node=8 train_grpo.py --loss_type dr_grpo --output_dir output_dr_qwen2_5vl_7b > qwen2.5vl7b-dr.out &

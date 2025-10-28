@@ -3,7 +3,7 @@ import re
 import numpy as np
 import random
 import torch
-from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration, Qwen3VLForConditionalGeneration
+from transformers import AutoProcessor
 from typing import List, Dict, Any
 from qwen_vl_utils import fetch_image
 import os
@@ -75,8 +75,10 @@ def compute_accuracy(prompts, completions, references, bench, id, issudoku):
 # ========== 加载模型与处理器 =======
 def model_processor(model_path):
     if "Qwen2.5-VL" in model_path:
+        from transformers import Qwen2_5_VLForConditionalGeneration
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
     elif "Qwen3-VL" in model_path:
+        from transformers import Qwen3VLForConditionalGeneration
         model = Qwen3VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
     # 使用use_fast=False来避免图像处理器的警告
     processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True, use_fast=False)
