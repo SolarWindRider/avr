@@ -93,7 +93,7 @@ def model_processor(model_path):
     return model, processor
 
 
-def get_dataset(image_root, train_json_path, processor):
+def get_dataset(image_root, train_json_path):
     def preprocess_to_rl(example):
         image_path = os.path.join(image_root, example["imgs"][0])
         option = f"option: {example['option']}\n" if example["option"] != "" else ""
@@ -158,9 +158,7 @@ def reward_fn(completions: List[str], prompts: List[str], metadatas: List[Dict[s
         # Handle cases where the item is a list or a single string/dict
         if isinstance(out_item, list) and len(out_item) > 0:
             # We assume the first element of the inner list is the generated text
-            out = out_item[0]
-        elif isinstance(out_item, str):
-            out = out_item
+            out = out_item[0]["content"]
         else:
             # If the item is not a list or string, we cannot process it
             rewards.append(0.0)

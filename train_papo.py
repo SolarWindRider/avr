@@ -24,7 +24,7 @@ train_json_path = "../datas/VisuRiddles/train_dataset.json"
 
 # ======= 模型与处理器 =======
 model, processor = model_processor(args.model_path)
-train_ds, eval_ds = get_dataset(image_root, train_json_path, processor)
+train_ds, eval_ds = get_dataset(image_root, train_json_path)
 
 
 # ======= LoRA 配置（与你 SFT 里一致的 target_modules） =======
