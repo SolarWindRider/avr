@@ -76,9 +76,11 @@ def compute_accuracy(prompts, completions, references, bench, id, issudoku):
 def model_processor(model_path):
     if "Qwen2.5-VL" in model_path:
         from transformers import Qwen2_5_VLForConditionalGeneration
+
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
     elif "Qwen3-VL" in model_path:
         from transformers import Qwen3VLForConditionalGeneration
+
         model = Qwen3VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
     # 使用use_fast=False来避免图像处理器的警告
     processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True, use_fast=False)
@@ -99,27 +101,14 @@ def get_dataset(image_root, train_json_path, processor):
             example["question"] + option + promptTemplates["Naive"] + 'Write the answer into a JSON form\n```json\n{"answer": "X"}```'
         )
 
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image",
-                        "image": image_path,
-                        "resized_height": 288,
-                        "resized_width": 288,
-                    },
-                    {"type": "text", "text": question},
-                ],
-            },
-        ]
-
-        text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        image_inputs = fetch_image({"image": image_path})
+        message = {
+            "role": "user",
+            "content": question,
+        }
         return {
             # GRPOTrainer 期望的列名：prompt / image（它会自行拼多模态模板）
-            "prompt": text,
-            "image": image_inputs,
+            "prompt": [message],
+            "image": fetch_image({"image": image_path}),
             # # metadatas 里带上 gold_answer，reward 用
             "metadatas": {"gold_answer": example.get("gold_answer", None)},
         }
