@@ -1,5 +1,6 @@
 {
     "Direct": "",
     "COT": "Let's think step by step. ",
-    "Naive": "You are a logician who is highly adept at solving abstract visual reasoning tasks, able to discern patterns and methods of change from given images and provide the correct answer. "
+    "Naive": "You are a logician who is highly adept at solving abstract visual reasoning tasks, able to discern patterns and methods of change from given images and provide the correct answer. ",
+    "DESP": "You need to carefully observe the changes in the images, describe how the images change, then summarize the pattern of these changes, and finally provide the correct answer."
 }
