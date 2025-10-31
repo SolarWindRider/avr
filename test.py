@@ -16,12 +16,13 @@ set_seed(42)
 parser = ArgumentParser()
 parser.add_argument("--model_path", type=str, default="../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct")
 parser.add_argument("--lora_path", type=str, default=None)
-parser.add_argument("--tp", type=int, default=4)  # 32B及以上的模型用8，更小的模型用4
-parser.add_argument("--temperature", type=float, default=0.7)
+parser.add_argument("--tp", type=int, default=1)  # 32B及以上的模型用8，更小的模型用4
+parser.add_argument("--temperature", type=float, default=1.0)
 parser.add_argument("--top_k", type=int, default=20)
-parser.add_argument("--top_p", type=float, default=0.9)
+parser.add_argument("--top_p", type=float, default=1.0)
 parser.add_argument("--log_path", type=str, default="./logs")
-parser.add_argument("--ptType", type=str, default="Direct,COT,Naive")
+parser.add_argument("--ptType", type=str, default="Direct,COT,Naive,DESP")
+parser.add_argument("--passAtk", type=str, default="1,8,16,32")
 args = parser.parse_args()
 print(args)
 
@@ -91,18 +92,60 @@ def build_prompts(dataset, processor, ptType):
 
 # ========== 使用 vLLM 推理 ==========
 def test_model_vllm(llm, processor, dataset, bench, log_path, ptType, max_new_tokens=8000):
-    prompts, references, id, issudoku = build_prompts(dataset, processor, ptType)
+    # 1. 构造输入
+    prompts, references, id_list, issudoku = build_prompts(dataset, processor, ptType)
 
+    # 2. 定义 pass@k 列表
+    pass_ks = [int(each.strip()) for each in args.passAtk.split(",")]
+    k_max = max(pass_ks)
+
+    # 3. 多样本采样设置
     sampling_params = SamplingParams(
-        temperature=args.temperature, top_k=args.top_k, top_p=args.top_p, max_tokens=max_new_tokens, stop=["<|im_end|>", "<|endoftext|>"]
+        n=k_max,  # 生成 k_max 个样本
+        temperature=args.temperature,
+        top_k=args.top_k,
+        top_p=args.top_p,
+        max_tokens=max_new_tokens,
+        stop=["<|im_end|>", "<|endoftext|>"],
     )
 
+    # 4. 执行推理
     outputs = llm.generate(prompts, sampling_params)
-    completions = [o.outputs[0].text.strip() for o in outputs]
 
-    test_log = compute_accuracy(prompts, completions, references, bench, id, issudoku)
+    # 5. 解析输出，收集每个样本的多个候选
+    all_candidates = []
+    for out in outputs:
+        cand_texts = [o.text.strip() for o in out.outputs]
+        all_candidates.append(cand_texts)
 
-    json.dump(test_log, open(f"{log_path}/{bench}_{ptType}.json", "w", encoding="utf-8"), ensure_ascii=False, indent=4)
+    # 6. 计算 pass@k
+    passk_results = {}
+    for k in pass_ks:
+        correct = 0
+        total = len(all_candidates)
+        for cand_list, ref, qid, sudoku_flag in zip(all_candidates, references, id_list, issudoku):
+            preds_k = cand_list[:k]
+            # 使用你已有的 compute_accuracy 子逻辑判断对错
+            # 我假设 compute_accuracy 支持单个样本调用，否则我们手动比对
+            result = compute_accuracy([None], preds_k, [ref], bench, [qid], [sudoku_flag])
+            # compute_accuracy 返回一个 log dict，我们假设其中有 "correct_num" / "total_num"
+            if result.get("correct_num", 0) > 0:
+                correct += 1
+        passk_results[f"pass@{k}"] = correct / total
+
+    # 7. 保存结果
+    json.dump(
+        {
+            "bench": bench,
+            "ptType": ptType,
+            "passk_results": passk_results,
+        },
+        open(f"{log_path}/{bench}_{ptType}_passk.json", "w", encoding="utf-8"),
+        ensure_ascii=False,
+        indent=4,
+    )
+
+    print(f"\n[{bench} | {ptType}] => " + ", ".join([f"{k}: {v:.2%}" for k, v in passk_results.items()]))
 
 
 # ========== 加载多模态图文问答数据 ==========
