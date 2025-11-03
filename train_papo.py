@@ -38,11 +38,11 @@ lora_config = LoraConfig(r=8, target_modules=["q_proj", "k_proj", "v_proj", "o_p
 """
 papo_config = PAPOConfig(
     # PAPO-specific params
-    perception_loss_weight=0.005,  # Weight for perception loss
+    perception_loss_weight=0,  # Weight for perception loss
     mask_ratio=0.6,  # 40% of image will be masked
     mask_type="random",  # Use patch masking (recommended)
-    der_loss_weight1=0.01,
-    der_loss_weight2=0.01,
+    der_loss_weight1=0,
+    der_loss_weight2=0,
     # GRPO params
     beta=0.01,
     epsilon=0.2,

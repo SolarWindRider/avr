@@ -8,6 +8,7 @@ from typing import List, Dict, Any
 from qwen_vl_utils import fetch_image
 import os
 from datasets import load_dataset
+import json  # 确保 json 被导入
 
 # import torch_npu
 
@@ -180,3 +181,84 @@ def reward_fn(completions: List[str], prompts: List[str], metadatas: List[Dict[s
             # Correct format + incorrect answer -> 1 point
             rewards.append(1.0)
     return rewards
+
+
+# ========== 评估准确率函数Accuracy==========
+
+
+# MODIFIED: 重写 compute_accuracy 以支持 pass@k
+def compute_accuracy(prompts, generation_outputs, references, bench, id, issudoku, k_values):
+    """
+    计算 pass@k 准确率。
+
+    :param prompts: vLLM的输入prompt列表
+    :param generation_outputs: vLLM的原始输出列表 (llm.generate的结果)
+    :param references: 答案列表
+    :param bench: benchmark 名称
+    :param id: ID 列表
+    :param issudoku: 是否为数独的布尔值列表
+    :param k_values: 要计算的 k 值列表, e.g., [1, 2, 4]
+    :return: 包含 Acc (字典) 和 Log 的字典
+    """
+    log = []
+    # MODIFIED: cnt 现在是一个字典，为每个k值计数
+    cnt = {k: 0 for k in k_values}
+
+    for idx in range(len(id)):
+        print(f"------[{bench}]    id: {id[idx]}---------------")
+
+        # MODIFIED: 获取此 prompt 的所有 k 个 completions
+        completions = [o.text.strip() for o in generation_outputs[idx].outputs]
+
+        is_correct_list = []  # 存储每个 completion 是否正确 (0 或 1)
+
+        # MODIFIED: 遍历此 prompt 的 *所有* completions
+        for completion in completions:
+            correct = 0  # 默认为错误
+            if not issudoku[idx]:
+                try:
+                    clean_answer_ = completion.split("{")[-1].split(":")[-1]
+                    if "," in clean_answer_:  # LogicVista有多选
+                        clean_answer = ", ".join(re.findall("[ABCDEFGH]+", clean_answer_))
+                    else:
+                        clean_answer = re.findall("[ABCDEFGH1234567890]+", clean_answer_)
+                        if len(clean_answer) != 0:
+                            clean_answer = clean_answer[0]
+                            if clean_answer in references[idx].strip():
+                                correct = 1
+                        else:  # PuzzleVQA的有些选项是单词或词组
+                            clean_answer = re.findall("[a-z ]+", clean_answer_)[0]
+                            if clean_answer == references[idx].strip():
+                                correct = 1
+                except Exception as e:
+                    pass
+            else:  # 数独的判定
+                try:
+                    clean_answer_ = re.findall("{.*}", completion)[-1]
+                    clean_answer = "\n".join(list(json.loads(clean_answer_).values())[0].split())
+                    if clean_answer == references[idx].strip():
+                        correct = 1
+                except Exception as e:
+                    pass
+
+            is_correct_list.append(correct)
+
+        # MODIFIED: 根据 is_correct_list 计算 pass@k
+        # "pass@k" = 在前 k 个样本中，是否至少有 1 个是正确的
+        for k in k_values:
+            # 检查 is_correct_list 的前 k 个元素
+            # any(is_correct_list[:k]) 会检查 [True, False, ...] 中是否有 True
+            if any(is_correct_list[:k]):
+                cnt[k] += 1
+
+        # MODIFIED: 更新打印和日志内容
+        print(
+            f"Prompts: {prompts[idx]['prompt']}\nPredictions: {completions}\nReference: {references[idx]}\nCorrect_List: {is_correct_list}"
+        )
+        log.append({"ID": id[idx], "Predictions": completions, "Reference": references[idx], "Correct_List": is_correct_list})
+
+    # MODIFIED: 计算所有 k 值的准确率
+    acc = {f"pass@{k}": cnt[k] / len(references) for k in k_values}
+
+    print(f"Accuracy: {acc}")
+    return {"Acc": acc, "Log": log}
