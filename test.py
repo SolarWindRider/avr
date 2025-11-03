@@ -5,7 +5,7 @@ from transformers import AutoProcessor
 import json
 from qwen_vl_utils import process_vision_info
 from argparse import ArgumentParser
-from utils.universal import promptTemplates, set_seed, model_processor
+from utils.universal import promptTemplates, set_seed, model_processor, compute_accuracy
 from peft import PeftModel
 
 mp.set_start_method("spawn", force=True)
@@ -22,6 +22,7 @@ parser.add_argument("--top_k", type=int, default=20)
 parser.add_argument("--top_p", type=float, default=1.0)
 parser.add_argument("--log_path", type=str, default="./logs")
 parser.add_argument("--ptType", type=str, default="Direct,COT,Naive,DESP")
+parser.add_argument("--bench", type=str, default="VisuRiddles,RAVEN,MARVEL,LogicVista,PuzzleVQA,AlgoPuzzleVQA")
 parser.add_argument("--passk", type=str, default="1,4,8,16,32", help="Comma-separated k values for pass@k, e.g., '1,2,4'")
 
 args = parser.parse_args()
@@ -245,6 +246,7 @@ if __name__ == "__main__":
 
     for ptType_ in args.ptType.split(","):
         ptType = ptType_.strip()
-        for bench in ["VisuRiddles", "RAVEN", "MARVEL", "LogicVista", "PuzzleVQA", "AlgoPuzzleVQA"]:
+        for bench_ in args.bench.split(","):
+            bench = bench_.strip()
             dataset = preprocess_multimodal_dataset(bench)
             test_model_vllm(llm, processor, dataset, bench, args.log_path, ptType, args.passk, args.max_k)
