@@ -15,13 +15,14 @@
 # ASCEND_RT_VISIBLE_DEVICES=0 nohup python test.py --tp 1 --ptType DESP --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test1.out &
 # ASCEND_RT_VISIBLE_DEVICES=1 nohup python test.py --tp 1 --ptType DESP --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test2.out &
 
-ASCEND_RT_VISIBLE_DEVICES=0 nohup python test.py --ptType Direct --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test0.out &
-ASCEND_RT_VISIBLE_DEVICES=1 nohup python test.py --ptType COT --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test1.out &
-ASCEND_RT_VISIBLE_DEVICES=2 nohup python test.py --ptType Naive --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test2.out &
-ASCEND_RT_VISIBLE_DEVICES=3 nohup python test.py --ptType DESP --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test3.out &
+# ASCEND_RT_VISIBLE_DEVICES=0 nohup python test.py --ptType Direct --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test0.out &
+# ASCEND_RT_VISIBLE_DEVICES=1 nohup python test.py --ptType COT --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test1.out &
+# ASCEND_RT_VISIBLE_DEVICES=2 nohup python test.py --ptType Naive --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test2.out &
+# ASCEND_RT_VISIBLE_DEVICES=3 nohup python test.py --ptType DESP --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test3.out &
 
-ASCEND_RT_VISIBLE_DEVICES=4 nohup python test.py --ptType Direct --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test4.out &
-ASCEND_RT_VISIBLE_DEVICES=5 nohup python test.py --ptType COT --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test5.out &
-ASCEND_RT_VISIBLE_DEVICES=6 nohup python test.py --ptType Naive --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test6.out &
-ASCEND_RT_VISIBLE_DEVICES=7 nohup python test.py --ptType DESP --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test7.out &
+ASCEND_RT_VISIBLE_DEVICES=3 nohup python test.py --ptType COT --bench PuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test5.out &
+ASCEND_RT_VISIBLE_DEVICES=4 nohup python test.py --ptType Direct --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test4.out &
+ASCEND_RT_VISIBLE_DEVICES=5 nohup python test.py --ptType COT --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test5.out &
+ASCEND_RT_VISIBLE_DEVICES=6 nohup python test.py --ptType Naive --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test6.out &
+ASCEND_RT_VISIBLE_DEVICES=7 nohup python test.py --ptType DESP --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test7.out &
 
