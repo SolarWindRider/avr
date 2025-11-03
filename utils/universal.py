@@ -94,7 +94,7 @@ def model_processor(model_path):
     return model, processor
 
 
-def get_dataset(image_root, train_json_path):
+def get_dataset(image_root, train_json_path, isGuide=False):
     def preprocess_to_rl(example):
         image_path = os.path.join(image_root, example["imgs"][0])
         option = f"option: {example['option']}\n" if example["option"] != "" else ""
@@ -102,24 +102,38 @@ def get_dataset(image_root, train_json_path):
             example["question"] + option + promptTemplates["Naive"] + 'Write the answer into a JSON form\n```json\n{"answer": "X"}```'
         )
 
-        message = {
-            "role": "user",
-            "content": question,
-        }
+        messages = [
+            {
+                "role": "user",
+                "content": question,
+            }
+        ]
+        if isGuide:
+            messages.append(
+                [
+                    {
+                        "role": "assistant",
+                        "content": example["gold_analysis"].strip() + "\n",
+                    },
+                ]
+            )
         return {
             # GRPOTrainer 期望的列名：prompt / image（它会自行拼多模态模板）
-            "prompt": [message],
+            "prompt": messages,
             "image": fetch_image({"image": image_path}),
             # # metadatas 里带上 gold_answer，reward 用
             "metadatas": {"gold_answer": example.get("gold_answer", None)},
         }
 
     raw = load_dataset("json", data_files={"train": train_json_path})["train"]
-    rl_ds = raw.map(preprocess_to_rl, remove_columns=list(raw.column_names), num_proc=8)
+    split = raw.train_test_split(test_size=0.3, seed=42)
     # 简单切分 train/val（可按需调整）
-    split = rl_ds.train_test_split(test_size=0.3, seed=42)
-    train_ds = split["train"]
-    eval_ds = split["test"]
+    raw_train = split["train"]
+    raw_eval = split["test"]
+    train_ds = raw_train.map(
+        lambda example: preprocess_to_rl(example, isGuide=isGuide), remove_columns=list(raw_train.column_names), num_proc=8
+    )
+    eval_ds = raw_eval.map(lambda example: preprocess_to_rl(example, isGuide=False), remove_columns=list(raw_eval.column_names), num_proc=8)
     return train_ds, eval_ds
 
 

@@ -13,6 +13,7 @@ parser = ArgumentParser()
 parser.add_argument("--model_path", type=str, default="../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct")
 parser.add_argument("--loss_type", type=str, default="grpo", choices=["dapo", "grpo", "dr_grpo"])
 parser.add_argument("--output_dir", type=str, default="output")
+parser.add_argument("--isGuide", type=bool, default=False)  # assistant thinking guide(bootstrap)
 
 args = parser.parse_args()
 print(args)
@@ -23,7 +24,7 @@ train_json_path = "../datas/VisuRiddles/train_dataset.json"
 
 # ======= 模型和数据集 =======
 model, processor = model_processor(args.model_path)
-train_ds, eval_ds = get_dataset(image_root, train_json_path, processor)
+train_ds, eval_ds = get_dataset(image_root, train_json_path, args.isGuide)
 
 # ======= LoRA 配置（与你 SFT 里一致的 target_modules） =======
 lora_config = LoraConfig(r=8, target_modules=["q_proj", "k_proj", "v_proj", "o_proj"], init_lora_weights=True)
@@ -52,7 +53,7 @@ grpo_config = GRPOConfig(
     save_only_model=True,
     eval_strategy="steps",
     eval_steps=50,
-    report_to="swanlab",
+    report_to="none",
     remove_unused_columns=False,
     fp16=False,
     bf16=True,
