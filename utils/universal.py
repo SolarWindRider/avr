@@ -95,7 +95,7 @@ def model_processor(model_path):
 
 
 def get_dataset(image_root, train_json_path, isGuide=False):
-    def preprocess_to_rl(example):
+    def preprocess_to_rl(example, isGuide):
         image_path = os.path.join(image_root, example["imgs"][0])
         option = f"option: {example['option']}\n" if example["option"] != "" else ""
         question = (
@@ -110,12 +110,10 @@ def get_dataset(image_root, train_json_path, isGuide=False):
         ]
         if isGuide:
             messages.append(
-                [
-                    {
-                        "role": "assistant",
-                        "content": example["gold_analysis"].strip() + "\n",
-                    },
-                ]
+                {
+                    "role": "assistant",
+                    "content": example["gold_analysis"].strip() + "\n",
+                },
             )
         return {
             # GRPOTrainer 期望的列名：prompt / image（它会自行拼多模态模板）
