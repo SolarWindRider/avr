@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser
 from peft import LoraConfig
-from trl import GRPOConfig, GRPOTrainer
+from trl.experimental.rtpo import RTPOConfig, RTPOTrainer
 from utils.universal import set_seed, get_dataset, model_processor, reward_fn
 
 # ======= 基础环境与路径 =======
@@ -13,7 +13,8 @@ parser = ArgumentParser()
 parser.add_argument("--model_path", type=str, default="../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct")
 parser.add_argument("--loss_type", type=str, default="grpo", choices=["dapo", "grpo", "dr_grpo"])
 parser.add_argument("--output_dir", type=str, default="output")
-parser.add_argument("--isGuide", type=bool, default=False)  # assistant thinking guide(bootstrap)
+parser.add_argument("--isGuide", type=bool, default=True)  # assistant thinking guide(bootstrap)
+parser.add_argument("--anneal_schedule", type=str, default="cosine")
 
 args = parser.parse_args()
 print(args)
@@ -30,12 +31,16 @@ train_ds, eval_ds = get_dataset(image_root, train_json_path, args.isGuide)
 lora_config = LoraConfig(r=8, target_modules=["q_proj", "k_proj", "v_proj", "o_proj"], init_lora_weights=True)
 
 
-# ======= GRPO 配置 =======
+# ======= RTPO 配置 =======
 """
 多卡：建议用 torchrun 启动（见文末命令）。也可切换到 FSDP/Deepspeed。
 这里把 remove_unused_columns=False 以保留图像列，供内部多模态拼接使用。
 """
-grpo_config = GRPOConfig(
+grpo_config = RTPOConfig(
+    # 退火参数
+    schedule_type=args.anneal_schedule,
+    direction="down",
+    # GRPO参数
     loss_type=args.loss_type,
     output_dir=args.output_dir,
     per_device_train_batch_size=1,
@@ -53,7 +58,7 @@ grpo_config = GRPOConfig(
     save_only_model=True,
     eval_strategy="steps",
     eval_steps=50,
-    report_to="swanlab",
+    report_to="none",
     remove_unused_columns=False,
     fp16=False,
     bf16=True,
@@ -71,8 +76,8 @@ grpo_config = GRPOConfig(
     },
 )
 
-# ======= 构建 GRPOTrainer =======
-trainer = GRPOTrainer(
+# ======= 构建 RTPOTrainer =======
+trainer = RTPOTrainer(
     model=model,
     processing_class=processor,  # 让内部根据 prompt+image 自动构建多模态输入
     args=grpo_config,
