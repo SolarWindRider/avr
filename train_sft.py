@@ -147,7 +147,7 @@ val_dataset = train_test_split["test"]
 
 # ======= LoRA 配置 =======
 lora_config = LoraConfig(
-    r=16,  # 默认8
+    r=8,  # 默认8
     # lora_alpha=8, #默认8
     # lora_dropout=0.05, #默认0
     # bias="none",#默认none
