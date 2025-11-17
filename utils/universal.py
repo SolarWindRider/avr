@@ -94,8 +94,8 @@ def model_processor(model_path):
     return model, processor
 
 
-def get_dataset(image_root, train_json_path, isGuide=False):
-    def preprocess_to_rl(example, isGuide):
+def get_dataset(image_root, train_json_path, think_process_key="gold_analysis", isGuide=False):
+    def preprocess_to_rl(example, think_process_key, isGuide):
         image_path = os.path.join(image_root, example["imgs"][0])
         option = f"option: {example['option']}\n" if example["option"] != "" else ""
         question = (
@@ -112,7 +112,7 @@ def get_dataset(image_root, train_json_path, isGuide=False):
             messages.append(
                 {
                     "role": "assistant",
-                    "content": example["gold_analysis"].strip() + "\n",
+                    "content": example[think_process_key].strip() + "\n",
                 },
             )
         return {
@@ -129,9 +129,9 @@ def get_dataset(image_root, train_json_path, isGuide=False):
     raw_train = split["train"]
     raw_eval = split["test"]
     train_ds = raw_train.map(
-        lambda example: preprocess_to_rl(example, isGuide=isGuide), remove_columns=list(raw_train.column_names), num_proc=8
+        lambda example: preprocess_to_rl(example,think_process_key, isGuide=isGuide), remove_columns=list(raw_train.column_names), num_proc=8
     )
-    eval_ds = raw_eval.map(lambda example: preprocess_to_rl(example, isGuide=False), remove_columns=list(raw_eval.column_names), num_proc=8)
+    eval_ds = raw_eval.map(lambda example: preprocess_to_rl(example,think_process_key, isGuide=False), remove_columns=list(raw_eval.column_names), num_proc=8)
     return train_ds, eval_ds
 
 

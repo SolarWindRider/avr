@@ -19,7 +19,7 @@ args = parser.parse_args()
 print(args)
 
 image_root = "../datas/VisuRiddles"
-train_json_path = "../datas/VisuRiddles/train_dataset.json"
+train_json_path = "../datas/VisuRiddles/syndata.json"
 
 
 # ======= 模型和数据集 =======

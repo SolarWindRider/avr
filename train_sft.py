@@ -23,12 +23,12 @@ print(args)
 
 
 image_root = "../datas/VisuRiddles"
+train_json_path = "../datas/VisuRiddles/syndata.json"
 if args.mode == "sft":
     think_process_key = "gold_analysis"  # 思维过程在数据集json文件中的字段
-    train_json_path = "../datas/VisuRiddles/train_dataset.json"
 elif args.mode == "syndata":
     think_process_key = "explanation"
-    train_json_path = "../datas/VisuRiddles/syndata.json"
+    
 # ======= 加载模型和处理器 =======
 model, processor = model_processor(args.model_path)
 
