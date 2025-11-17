@@ -63,7 +63,7 @@ grpo_config = RTPOConfig(
     fp16=False,
     bf16=True,
     max_prompt_length=8192,
-    max_completion_length=2048,
+    max_completion_length=8192,
     fsdp="full_shard auto_wrap",
     fsdp_config={
         "mixed_precision": "bf16",
