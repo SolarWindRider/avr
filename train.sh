@@ -19,6 +19,6 @@
 # nohup torchrun --nproc_per_node=8 train_papo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type dapo --output_dir output_papod_qwen2_5vl_3b > qwen2.5vl3b-papod.out &
 # nohup torchrun --nproc_per_node=8 train_papo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type grpo --output_dir output_papog_off_qwen2_5vl_3b > qwen2.5vl3b-papog-off.out &
 
-torchrun --nproc_per_node=8 train_rtpo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type grpo    --output_dir output_rtpoGsyn2_5vl_3b  > qwen2.5vl3b-rtpoGsyn.out  --think_process_key explanation
-torchrun --nproc_per_node=8 train_rtpo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type dr_grpo --output_dir output_rtpoDRsyn2_5vl_3b > qwen2.5vl3b-rtpoDRsyn.out --think_process_key explanation
-torchrun --nproc_per_node=8 train_rtpo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type dapo    --output_dir output_rtpoDsyn2_5vl_3b  > qwen2.5vl3b-rtpoDsyn.out  --think_process_key explanation
+torchrun --nproc_per_node=8 train_rtpo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type grpo    --output_dir output_rtpoGsyn2_5vl_3b  --think_process_key explanation > qwen2.5vl3b-rtpoGsyn.out  
+torchrun --nproc_per_node=8 train_rtpo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type dr_grpo --output_dir output_rtpoDRsyn2_5vl_3b --think_process_key explanation > qwen2.5vl3b-rtpoDRsyn.out 
+torchrun --nproc_per_node=8 train_rtpo.py --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --loss_type dapo    --output_dir output_rtpoDsyn2_5vl_3b  --think_process_key explanation > qwen2.5vl3b-rtpoDsyn.out  
