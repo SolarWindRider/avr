@@ -7,6 +7,7 @@ from qwen_vl_utils import process_vision_info
 from argparse import ArgumentParser
 from utils.universal import promptTemplates, set_seed, model_processor, compute_accuracy
 from peft import PeftModel
+import torch
 
 mp.set_start_method("spawn", force=True)
 # =========固定随机种子============================
@@ -24,6 +25,10 @@ parser.add_argument("--log_path", type=str, default="./logs")
 parser.add_argument("--ptType", type=str, default="Direct,COT,Naive,DESP")
 parser.add_argument("--bench", type=str, default="VisuRiddles,RAVEN,MARVEL,LogicVista,PuzzleVQA,AlgoPuzzleVQA")
 parser.add_argument("--passk", type=str, default="1,4,8,16,32", help="Comma-separated k values for pass@k, e.g., '1,2,4'")
+parser.add_argument(
+    "--engine", type=str, default="vllm", choices=["vllm", "hf"], help="Choose inference backend: vllm or hf (HuggingFace)."
+)
+
 
 args = parser.parse_args()
 args.passk = sorted(list(set(int(k) for k in args.passk.split(","))))
@@ -49,7 +54,7 @@ def merge():
 
 
 # ========== 构造图文 prompt ==========
-def build_prompts(dataset, processor, ptType):
+def build_prompts(dataset, processor, ptType, isHF=False):
     prompts = []
     references = []
     id = []
@@ -62,7 +67,6 @@ def build_prompts(dataset, processor, ptType):
         answer = example["answer"]
 
         img_messages = [
-            {"role": "system", "content": "You are a helpful assistant."},
             {
                 "role": "user",
                 "content": [
@@ -74,19 +78,21 @@ def build_prompts(dataset, processor, ptType):
                 ],
             },
         ]
-
-        # 构造 Qwen2.5-VL 的 prompt
-        prompt = processor.apply_chat_template(img_messages, tokenize=False, add_generation_prompt=True)
-        image_inputs, _, _ = process_vision_info(img_messages, return_video_kwargs=True)
-
-        mm_data = {}
-        if image_inputs is not None:
-            mm_data["image"] = image_inputs
-
-        llm_inputs = {
-            "prompt": prompt,
-            "multi_modal_data": mm_data,
-        }
+        if not isHF:
+            # 构造 Qwen的prompt
+            prompt = processor.apply_chat_template(img_messages, tokenize=False, add_generation_prompt=True)
+            image_inputs, _, _ = process_vision_info(img_messages, return_video_kwargs=True)
+            mm_data = {}
+            if image_inputs is not None:
+                mm_data["image"] = image_inputs
+            llm_inputs = {
+                "prompt": prompt,
+                "multi_modal_data": mm_data,
+            }
+        else:
+            llm_inputs = processor.apply_chat_template(
+                img_messages, tokenize=True, add_generation_prompt=True, return_dict=True, return_tensors="pt"
+            )
         prompts.append(llm_inputs)
         references.append(answer)
         id.append(example["id"])
@@ -118,6 +124,45 @@ def test_model_vllm(llm, processor, dataset, bench, log_path, ptType, k_values, 
     test_log = compute_accuracy(prompts, outputs, references, bench, id, issudoku, k_values)
 
     json.dump(test_log, open(f"{log_path}/{bench}_{ptType}.json", "w", encoding="utf-8"), ensure_ascii=False, indent=4)
+
+
+# ========== 使用 HF 推理 ==========
+def test_model_hf(model, processor, dataset, bench, log_path, ptType, k_values, max_k, max_new_tokens=1024):
+    isHF = True if args.engine == "hf" else False
+    prompts, references, ids, issudoku = build_prompts(dataset, processor, ptType, isHF)
+
+    all_outputs = []  # 存储每个样本的 k 个输出
+
+    for inputs in prompts:
+        # HF 使用 `num_return_sequences=max_k`
+        with torch.no_grad():
+            generated_ids = model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=True,
+                top_p=args.top_p,
+                top_k=args.top_k,
+                temperature=args.temperature,
+                num_return_sequences=max_k,
+            )
+
+        # 生成结果切掉输入部分
+        gen_list = []
+        for gi in generated_ids:
+            trimmed = gi[len(inputs["input_ids"][0]) :]
+            text = processor.decode(trimmed, skip_special_tokens=True)
+            gen_list.append(text)
+
+        all_outputs.append(gen_list)
+
+    # 转成 vLLM 输出格式供 compute_accuracy 使用
+    fake_outputs = []
+    for k_list in all_outputs:
+        fake_outputs.append(type("Fake", (), {"outputs": [type("TextObj", (), {"text": x}) for x in k_list]}))
+
+    test_log = compute_accuracy(prompts, fake_outputs, references, bench, ids, issudoku, k_values)
+
+    json.dump(test_log, open(f"{log_path}/{bench}_{ptType}_hf.json", "w", encoding="utf-8"), ensure_ascii=False, indent=4)
 
 
 # ========== 加载多模态图文问答数据 ==========
@@ -242,11 +287,24 @@ if __name__ == "__main__":
     merge()
 
     processor = AutoProcessor.from_pretrained(args.model_path, trust_remote_code=True)
-    llm = LLM(model=args.model_path, trust_remote_code=True, tensor_parallel_size=args.tp, max_model_len=15000)  # 自动多卡推理
 
+    # ====== 根据 engine 加载不同推理引擎 ======
+    if args.engine == "vllm":
+        print("[INFO] Using vLLM inference backend")
+        llm = LLM(model=args.model_path, trust_remote_code=True, tensor_parallel_size=args.tp, max_model_len=15000)
+    else:
+        print("[INFO] Using HuggingFace (HF) inference backend")
+        model, processor = model_processor(args.model_path)
+        llm = None  # 防止误用
+
+    # ====== 多 bench / 多 prompt 类型 逐个评估 ======
     for ptType_ in args.ptType.split(","):
         ptType = ptType_.strip()
         for bench_ in args.bench.split(","):
             bench = bench_.strip()
             dataset = preprocess_multimodal_dataset(bench)
-            test_model_vllm(llm, processor, dataset, bench, args.log_path, ptType, args.passk, args.max_k)
+
+            if args.engine == "vllm":
+                test_model_vllm(llm, processor, dataset, bench, args.log_path, ptType, args.passk, args.max_k)
+            else:
+                test_model_hf(model, processor, dataset, bench, args.log_path, ptType, args.passk, args.max_k)
