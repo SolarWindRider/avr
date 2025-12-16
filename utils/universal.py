@@ -78,11 +78,11 @@ def model_processor(model_path):
     if "Qwen2.5-VL" in model_path:
         from transformers import Qwen2_5_VLForConditionalGeneration
 
-        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
+        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, dtype=torch.bfloat16)
     elif "Qwen3-VL" in model_path:
         from transformers import Qwen3VLForConditionalGeneration
 
-        model = Qwen3VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
+        model = Qwen3VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, dtype=torch.bfloat16)
     # 使用use_fast=False来避免图像处理器的警告
     processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True, use_fast=False)
     # pad_token 兜底（与 SFT 脚本保持一致）
