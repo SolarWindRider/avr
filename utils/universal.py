@@ -103,11 +103,13 @@ def compute_accuracy(prompts, completions, references, bench, id, issudoku):
 
 # ========== 加载模型与处理器 =======
 def model_processor(model_path):
-    if "Qwen2.5-VL" in model_path:
+    configjs = json.load(open(f"{model_path}/config.json", "r", encoding="UTF-8"))
+    modelarch = configjs["model_type"]
+    if modelarch == "qwen2_5_vl":
         from transformers import Qwen2_5_VLForConditionalGeneration
 
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, dtype=torch.bfloat16)
-    elif "Qwen3-VL" in model_path:
+    elif modelarch == "qwen3_vl":
         from transformers import Qwen3VLForConditionalGeneration
 
         model = Qwen3VLForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True, dtype=torch.bfloat16)
