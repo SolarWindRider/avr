@@ -9,6 +9,7 @@ from qwen_vl_utils import fetch_image
 import os
 from datasets import load_dataset
 import json  # 确保 json 被导入
+from peft import PeftModel
 
 # import torch_npu
 
@@ -27,6 +28,30 @@ def set_seed(seed=42):
     torch.backends.cudnn.benchmark = False  # 关闭 cuDNN 的自动优化，保证可复现性
     # torch_npu.npu.manual_seed(seed)
     # torch_npu.npu.manual_seed_all(seed)  # if using multiple NPUs
+
+
+# ========== 融合模型 ==========================
+def merge(args):
+    try:
+        if args.lora_path != None:
+            # 由于vllm不支持加载视觉模块的lora权重，所以先做融合是最简单的方案
+            # Step 1: 加载 base 模型 + LoRA adapter
+            if args.lora_path:
+                base_model, processor = model_processor(args.model_path)
+                peft_model = PeftModel.from_pretrained(base_model, args.lora_path, trust_remote_code=True)
+
+                # Step 2: 将 LoRA 融合进模型
+                peft_model = peft_model.merge_and_unload()  # ⚠️ 注意这一步
+
+                # Step 3: 保存融合后的模型
+                args.model_path = f"merged-model-{args.log_path}"  # 更新模型路径为融合后的模型
+                peft_model.save_pretrained(args.model_path)
+                processor.save_pretrained(args.model_path)
+                print(f"Lora 权重与模型权重融合【成功】。\nLora权重路径：{args.lora_path}\n模型权重路径：{args.model_path}")
+    except Exception as e:
+        print(f"Error: {e}")
+        print(f"Lora 权重与模型权重融合【失败】。\nLora权重路径：{args.lora_path}\n模型权重路径：{args.model_path}")
+    return args
 
 
 # ========== 评估准确率函数Accuracy==========
@@ -129,9 +154,13 @@ def get_dataset(image_root, train_json_path, think_process_key="gold_analysis", 
     raw_train = split["train"]
     raw_eval = split["test"]
     train_ds = raw_train.map(
-        lambda example: preprocess_to_rl(example,think_process_key, isGuide=isGuide), remove_columns=list(raw_train.column_names), num_proc=8
+        lambda example: preprocess_to_rl(example, think_process_key, isGuide=isGuide),
+        remove_columns=list(raw_train.column_names),
+        num_proc=8,
     )
-    eval_ds = raw_eval.map(lambda example: preprocess_to_rl(example,think_process_key, isGuide=False), remove_columns=list(raw_eval.column_names), num_proc=8)
+    eval_ds = raw_eval.map(
+        lambda example: preprocess_to_rl(example, think_process_key, isGuide=False), remove_columns=list(raw_eval.column_names), num_proc=8
+    )
     return train_ds, eval_ds
 
 

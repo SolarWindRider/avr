@@ -5,8 +5,8 @@ from transformers import AutoProcessor
 import json
 from qwen_vl_utils import process_vision_info
 from argparse import ArgumentParser
-from utils.universal import promptTemplates, set_seed, model_processor, compute_accuracy
-from peft import PeftModel
+from utils.universal import promptTemplates, set_seed, compute_accuracy, merge
+
 
 mp.set_start_method("spawn", force=True)
 # =========固定随机种子============================
@@ -29,23 +29,7 @@ args = parser.parse_args()
 args.passk = sorted(list(set(int(k) for k in args.passk.split(","))))
 args.max_k = max(args.passk)
 print(args)
-
-
-# ========== 融合模型 ==========================
-def merge():
-    # 由于vllm不支持加载视觉模块的lora权重，所以先做融合是最简单的方案
-    # Step 1: 加载 base 模型 + LoRA adapter
-    if args.lora_path:
-        base_model, processor = model_processor(args.model_path)
-        peft_model = PeftModel.from_pretrained(base_model, args.lora_path, trust_remote_code=True)
-
-        # Step 2: 将 LoRA 融合进模型
-        peft_model = peft_model.merge_and_unload()  # ⚠️ 注意这一步
-
-        # Step 3: 保存融合后的模型
-        args.model_path = f"merged-model-{args.log_path}"  # 更新模型路径为融合后的模型
-        peft_model.save_pretrained(args.model_path)
-        processor.save_pretrained(args.model_path)
+args = merge(args)
 
 
 # ========== 构造图文 prompt ==========
@@ -239,7 +223,6 @@ def preprocess_multimodal_dataset(bench):
 # ========== 主程序入口 ==========
 if __name__ == "__main__":
     os.makedirs(args.log_path, exist_ok=True)
-    merge()
 
     processor = AutoProcessor.from_pretrained(args.model_path, trust_remote_code=True)
     llm = LLM(model=args.model_path, trust_remote_code=True, tensor_parallel_size=args.tp, max_model_len=15000)  # 自动多卡推理

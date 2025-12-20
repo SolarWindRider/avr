@@ -6,7 +6,7 @@ from trl import SFTConfig, SFTTrainer
 from argparse import ArgumentParser
 from qwen_vl_utils import process_vision_info
 from torch.nn.utils.rnn import pad_sequence
-from utils.universal import set_seed, promptTemplates, model_processor
+from utils.universal import set_seed, promptTemplates, model_processor, merge
 
 
 set_seed(42)
@@ -17,9 +17,11 @@ parser = ArgumentParser()
 parser.add_argument("--model_path", type=str, default="../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct")
 parser.add_argument("--mode", type=str, default="sft", choices=["sft", "syndata"])
 parser.add_argument("--output_dir", type=str, default="output")
+parser.add_argument("--lora_path", type=str, default=None)
 
 args = parser.parse_args()
 print(args)
+args = merge(args)
 
 
 image_root = "../datas/VisuRiddles"
@@ -28,7 +30,7 @@ if args.mode == "sft":
     think_process_key = "gold_analysis"  # 思维过程在数据集json文件中的字段
 elif args.mode == "syndata":
     think_process_key = "explanation"
-    
+
 # ======= 加载模型和处理器 =======
 model, processor = model_processor(args.model_path)
 

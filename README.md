@@ -1,6 +1,6 @@
 # 🚀 Reverse Thinking Policy Optimization (RTPO)
 
-This PR introduces **Reverse Thinking Policy Optimization (RTPO)** — a new RL training method for LLMs built on top of `GRPOTrainer`.
+This Work introduces **Reverse Thinking Policy Optimization (RTPO)** — a new RL training method for LLMs built on top of `GRPOTrainer`.
 ---
 
 ## 🔍 Motivation

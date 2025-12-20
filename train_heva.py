@@ -1,17 +1,16 @@
 import os
 from argparse import ArgumentParser
 from peft import LoraConfig
-from trl.experimental.rtpo import RTPOConfig, RTPOTrainer
+from trl.experimental.heva import HEVAConfig, HEVATrainer
 from utils.universal import set_seed, get_dataset, model_processor, reward_fn, merge
 
 # ======= 基础环境与路径 =======
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 set_seed(42)
-args = merge(args)
 
 # ==========参数===================================
 parser = ArgumentParser()
-parser.add_argument("--model_path", type=str, default="../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct")
+parser.add_argument("--model_path", type=str, default="../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct")
 parser.add_argument("--loss_type", type=str, default="grpo", choices=["dapo", "grpo", "dr_grpo"])
 parser.add_argument("--output_dir", type=str, default="output")
 parser.add_argument(
@@ -22,6 +21,7 @@ parser.add_argument("--lora_path", type=str, default=None)
 
 args = parser.parse_args()
 print(args)
+args = merge(args)
 
 image_root = "../datas/VisuRiddles"
 train_json_path = "../datas/VisuRiddles/syndata.json"
@@ -40,17 +40,18 @@ lora_config = LoraConfig(r=8, target_modules=["q_proj", "k_proj", "v_proj", "o_p
 多卡：建议用 torchrun 启动（见文末命令）。也可切换到 FSDP/Deepspeed。
 这里把 remove_unused_columns=False 以保留图像列，供内部多模态拼接使用。
 """
-grpo_config = RTPOConfig(
+grpo_config = HEVAConfig(
     # 退火参数
     schedule_type=args.anneal_schedule,
     direction="down",
     # GRPO参数
+    beta=0.01,
     loss_type=args.loss_type,
     output_dir=args.output_dir,
     per_device_train_batch_size=1,
     per_device_eval_batch_size=8,
-    gradient_accumulation_steps=1,
-    num_generations=8,  # 每个 prompt 采样 8 条
+    gradient_accumulation_steps=2,
+    num_generations=2,  # 每个 prompt 采样 8 条
     top_k=20,
     num_train_epochs=3,  # 可换成 num_train_epochs
     learning_rate=5e-5,  # RL 一般用更小 LR；按需调
@@ -62,26 +63,16 @@ grpo_config = RTPOConfig(
     save_only_model=True,
     eval_strategy="steps",
     eval_steps=50,
-    report_to="swanlab",
+    report_to="none",
     remove_unused_columns=False,
     fp16=False,
     bf16=True,
     max_prompt_length=8192,
     max_completion_length=8192,
-    fsdp="full_shard auto_wrap",
-    fsdp_config={
-        "mixed_precision": "bf16",
-        "forward_prefetch": True,
-        "use_orig_params": False,
-        "use_cpu": True,
-        "offload_params": True,
-        "offload_optimizer": True,
-        "enable_gradient_checkpointing": True,
-    },
 )
 
 # ======= 构建 RTPOTrainer =======
-trainer = RTPOTrainer(
+trainer = HEVATrainer(
     model=model,
     processing_class=processor,  # 让内部根据 prompt+image 自动构建多模态输入
     args=grpo_config,

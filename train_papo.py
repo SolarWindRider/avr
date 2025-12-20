@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from peft import LoraConfig
 from trl.experimental.papo.papo_config import PAPOConfig
 from trl.experimental.papo.papo_trainer import PAPOTrainer
-from utils.universal import set_seed, get_dataset, model_processor, reward_fn
+from utils.universal import set_seed, get_dataset, model_processor, reward_fn, merge
 
 # ======= 基础环境与路径 =======
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
@@ -14,9 +14,11 @@ parser = ArgumentParser()
 parser.add_argument("--model_path", type=str, default="../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct")
 parser.add_argument("--loss_type", type=str, default="grpo", choices=["dapo", "grpo"])  # 只有PAPO-G和PAPO-D
 parser.add_argument("--output_dir", type=str, default="output")
+parser.add_argument("--lora_path", type=str, default=None)
 
 args = parser.parse_args()
 print(args)
+args = merge(args)
 
 image_root = "../datas/VisuRiddles"
 train_json_path = "../datas/VisuRiddles/syndata.json"
