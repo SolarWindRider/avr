@@ -44,7 +44,10 @@ def merge(args):
                 peft_model = peft_model.merge_and_unload()  # ⚠️ 注意这一步
 
                 # Step 3: 保存融合后的模型
-                args.model_path = f"merged-model-{args.log_path}"  # 更新模型路径为融合后的模型
+                try:
+                    args.model_path = f"merged-model-{args.log_path}"  # 更新模型路径为融合后的模型
+                except Exception as e:
+                    args.model_path = f"merged-model-{args.output_dir}"
                 peft_model.save_pretrained(args.model_path)
                 processor.save_pretrained(args.model_path)
                 print(f"Lora 权重与模型权重融合【成功】。\nLora权重路径：{args.lora_path}\n模型权重路径：{args.model_path}")
