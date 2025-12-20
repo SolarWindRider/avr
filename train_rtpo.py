@@ -7,7 +7,7 @@ from utils.universal import set_seed, get_dataset, model_processor, reward_fn, m
 # ======= 基础环境与路径 =======
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 set_seed(42)
-args = merge(args)
+
 
 # ==========参数===================================
 parser = ArgumentParser()
@@ -22,6 +22,7 @@ parser.add_argument("--lora_path", type=str, default=None)
 
 args = parser.parse_args()
 print(args)
+args = merge(args)
 
 image_root = "../datas/VisuRiddles"
 train_json_path = "../datas/VisuRiddles/syndata.json"
