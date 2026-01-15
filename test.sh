@@ -20,9 +20,25 @@
 # ASCEND_RT_VISIBLE_DEVICES=2 nohup python test.py --ptType Naive --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test2.out &
 # ASCEND_RT_VISIBLE_DEVICES=3 nohup python test.py --ptType DESP --log_path Qwen2.5-VL-3B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct > test3.out &
 
-ASCEND_RT_VISIBLE_DEVICES=3 nohup python test.py --ptType COT --bench PuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test5.out &
-ASCEND_RT_VISIBLE_DEVICES=4 nohup python test.py --ptType Direct --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test4.out &
-ASCEND_RT_VISIBLE_DEVICES=5 nohup python test.py --ptType COT --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test5.out &
-ASCEND_RT_VISIBLE_DEVICES=6 nohup python test.py --ptType Naive --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test6.out &
-ASCEND_RT_VISIBLE_DEVICES=7 nohup python test.py --ptType DESP --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test7.out &
+# ASCEND_RT_VISIBLE_DEVICES=3 nohup python test.py --ptType COT --bench PuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test5.out &
+# ASCEND_RT_VISIBLE_DEVICES=4 nohup python test.py --ptType Direct --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test4.out &
+# ASCEND_RT_VISIBLE_DEVICES=5 nohup python test.py --ptType COT --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test5.out &
+# ASCEND_RT_VISIBLE_DEVICES=6 nohup python test.py --ptType Naive --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test6.out &
+# ASCEND_RT_VISIBLE_DEVICES=7 nohup python test.py --ptType DESP --bench AlgoPuzzleVQA --log_path Qwen2.5-VL-7B-Instruct --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-7B-Instruct > test7.out &
 
+# VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=0 nohup python test.py --ptType Naive --bench VisuRiddles,RAVEN,MARVEL,LogicVista --log_path Qwen3B-sftD  --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_Dsft2_5vl_3b/checkpoint-650/checkpoint-650 > test0.out &
+# VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=1 nohup python test.py --ptType Naive --bench PuzzleVQA                           --log_path Qwen3B-sftD  --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_Dsft2_5vl_3b/checkpoint-650/checkpoint-650 > test1.out &
+# VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=2 nohup python test.py --ptType Naive --bench AlgoPuzzleVQA                       --log_path Qwen3B-sftD  --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_Dsft2_5vl_3b/checkpoint-650/checkpoint-650 > test2.out &
+
+# VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=3 nohup python test.py --ptType Naive --bench VisuRiddles,RAVEN,MARVEL,LogicVista --log_path Qwen3B-sftDR --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_DRsft2_5vl_3b/checkpoint-650/checkpoint-650 > test3.out &
+# VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=4 nohup python test.py --ptType Naive --bench PuzzleVQA                           --log_path Qwen3B-sftDR --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_DRsft2_5vl_3b/checkpoint-650/checkpoint-650 > test4.out &
+# VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=5 nohup python test.py --ptType Naive --bench AlgoPuzzleVQA                       --log_path Qwen3B-sftDR --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_DRsft2_5vl_3b/checkpoint-650/checkpoint-650 > test5.out &
+
+# VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=6 nohup python test.py --ptType Naive --bench VisuRiddles,RAVEN,MARVEL,LogicVista --log_path Qwen3B-sftG  --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_Gsft2_5vl_3b/checkpoint-650/checkpoint-650 > test6.out &
+# VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=7 nohup python test.py --ptType Naive --bench PuzzleVQA                           --log_path Qwen3B-sftG  --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_Gsft2_5vl_3b/checkpoint-650/checkpoint-650 > test7.out &
+
+# VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=0 nohup python test.py --ptType Naive --bench AlgoPuzzleVQA                       --log_path Qwen3B-sftG --model_path ../Downloads/Models/Qwen/Qwen2.5-VL-3B-Instruct --lora_path output_Gsft2_5vl_3b/checkpoint-650/checkpoint-650 > test6.out &
+
+VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=0 nohup python test.py --ptType Naive --bench VisuRiddles,RAVEN,MARVEL,LogicVista --log_path VPPO-7B  --model_path ../Downloads/Models/chamber111/VPPO-7B > test0.out &
+VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=1 nohup python test.py --ptType Naive --bench PuzzleVQA                           --log_path VPPO-7B  --model_path ../Downloads/Models/chamber111/VPPO-7B > test1.out &
+VLLM_WORKER_MULTIPROC_METHOD=spawn ASCEND_RT_VISIBLE_DEVICES=2 nohup python test.py --ptType Naive --bench AlgoPuzzleVQA                       --log_path VPPO-7B  --model_path ../Downloads/Models/chamber111/VPPO-7B > test2.out &

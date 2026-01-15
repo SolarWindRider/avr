@@ -8,7 +8,6 @@ from argparse import ArgumentParser
 from utils.universal import promptTemplates, set_seed, compute_accuracy, merge
 
 
-mp.set_start_method("spawn", force=True)
 # =========固定随机种子============================
 set_seed(42)
 
@@ -42,7 +41,10 @@ def build_prompts(dataset, processor, ptType):
         image_path = example["image_path"]
 
         option = f"option: {example['option']}\n" if example["option"] != "" else ""
-        question = example["question"] + option + promptTemplates[ptType] + 'Write the answer into a JSON form\n```json\n{"answer": "X"}```'
+        if ptType=="VPPO":
+            question = example["question"] + option + promptTemplates[ptType]
+        else:
+            question = example["question"] + option + promptTemplates[ptType] + 'Write the answer into a JSON form\n```json\n{"answer": "X"}```'
         answer = example["answer"]
 
         img_messages = [
