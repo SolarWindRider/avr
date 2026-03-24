@@ -127,22 +127,27 @@ def model_processor(model_path):
 def get_dataset(image_root, train_json_path, think_process_key="gold_analysis", isGuide=False):
     def preprocess_to_rl(example, think_process_key, isGuide):
         image_path = os.path.join(image_root, example["imgs"][0])
-        option = f"option: {example['option']}\n" if example["option"] != "" else ""
-        question = (
-            example["question"] + option + promptTemplates["Naive"] + 'Write the answer into a JSON form\n```json\n{"answer": "X"}```'
-        )
+        option_str = f"option: {example["option"]}\n" if example["option"] != "" else ""
+        full_question = example["question"] + option_str + 'Write the answer into a JSON form\n```json\n{"answer": "X"}```'
 
         messages = [
+            {"role": "system", "content": [{"type": "text", "text": "You are good at step by step reasoning."}]},
             {
                 "role": "user",
-                "content": question,
-            }
+                "content": [
+                    {
+                        "type": "image",
+                        "image": image_path,
+                    },
+                    {"type": "text", "text": full_question},
+                ],
+            },
         ]
         if isGuide:
             messages.append(
                 {
                     "role": "assistant",
-                    "content": example[think_process_key].strip() + "\n",
+                    "content": [{ "type": "text", "text": example[think_process_key].strip() + "\n" }],
                 },
             )
         return {
